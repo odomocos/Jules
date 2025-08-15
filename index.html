@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roofing Leads</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <div class="logo">Roofing Leads Inc.</div>
+            <ul>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#homeowners">For Homeowners</a></li>
+                <li><a href="#contractors">For Contractors</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="hero-content">
+                <h1>Get High-Quality Roofing Leads</h1>
+                <p>We connect homeowners with trusted local roofers. Stop chasing leads and start closing deals.</p>
+                <a href="#contractors" class="cta-button">Get Started</a>
+            </div>
+        </section>
+
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <h3>1. Homeowners Request a Quote</h3>
+                    <p>Homeowners in need of roofing services fill out a simple form on our site.</p>
+                </div>
+                <div class="step">
+                    <h3>2. We Qualify the Lead</h3>
+                    <p>Our team verifies the homeowner's needs and contact information to ensure lead quality.</p>
+                </div>
+                <div class="step">
+                    <h3>3. You Get Exclusive Leads</h3>
+                    <p>We send the verified, exclusive lead directly to you. No more competing with other contractors.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="homeowners">
+            <h2>Free Roofing Quotes</h2>
+            <p>Need a new roof or a repair? Get free, no-obligation quotes from top-rated local roofing contractors.</p>
+            <form id="lead-form">
+                <h3>Get Your Free Quote</h3>
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <input type="tel" name="phone" placeholder="Your Phone Number" required>
+                <input type="text" name="zip" placeholder="Your ZIP Code" required>
+                <textarea name="description" placeholder="Briefly describe your roofing needs..."></textarea>
+                <button type="submit">Submit Request</button>
+                <!--
+                    Backend Integration Note:
+                    On form submission, this data should be sent to a secure API endpoint.
+                    Example: POST /api/leads
+                    The backend would then save this lead to the database and notify available agents.
+                -->
+            </form>
+        </section>
+
+        <section id="contractors">
+            <h2>Grow Your Roofing Business</h2>
+            <p>Stop wasting money on ineffective advertising. Get a steady stream of exclusive, high-quality roofing leads delivered directly to you.</p>
+            <a href="#pricing" class="cta-button">View Plans</a>
+        </section>
+
+        <section id="pricing">
+            <h2>Contractor Subscription Plans</h2>
+            <div class="pricing-tiers">
+                <div class="tier">
+                    <h3>Basic</h3>
+                    <p class="price">$199/mo</p>
+                    <ul>
+                        <li>Up to 5 leads per month</li>
+                        <li>Email support</li>
+                        <li>Basic lead filtering</li>
+                    </ul>
+                    <a href="#" class="cta-button">Sign Up</a>
+                </div>
+                <div class="tier">
+                    <h3>Pro</h3>
+                    <p class="price">$499/mo</p>
+                    <ul>
+                        <li>Up to 15 leads per month</li>
+                        <li>Phone & Email support</li>
+                        <li>Advanced lead filtering</li>
+                    </ul>
+                    <a href="#" class="cta-button">Sign Up</a>
+                </div>
+                <div class="tier">
+                    <h3>Premium</h3>
+                    <p class="price">$899/mo</p>
+                    <ul>
+                        <li>Up to 30 leads per month</li>
+                        <li>24/7 Priority support</li>
+                        <li>Dedicated account manager</li>
+                    </ul>
+                    <a href="#" class="cta-button">Sign Up</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Roofing Leads Inc. All rights reserved.</p>
+        <!--
+            Agent/Admin Link:
+            A link to the agent dashboard could be placed here,
+            perhaps hidden or on a separate login page.
+            Example: <a href="/admin">Agent Login</a>
+        -->
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
