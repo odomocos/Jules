@@ -3,132 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[BrandName] - Find Top-Rated Pros Near You</title>
+    <title>[BrandName] - Redesigned</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header id="main-header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">[BrandName]</div>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="#interior">Interior</a></li>
-                        <li><a href="#exterior">Exterior</a></li>
-                        <li><a href="#lawn-garden">Lawn & Garden</a></li>
-                        <li><a href="#more">More</a></li>
-                        <li><a href="#articles">Articles & Advice</a></li>
-                    </ul>
-                </nav>
-                <div class="user-actions">
-                    <a href="#join-pro" class="button button-secondary">Join as a Pro</a>
-                    <a href="#login">Log In</a>
-                    <a href="#signup" class="button button-primary">Sign Up</a>
-                </div>
+        <div class="container header-content">
+            <div class="logo">[BrandName]</div>
+            <div class="user-actions">
+                <a href="#join-pro">Join as a Pro</a>
+                <a href="#login">Log In</a>
+                <a href="#signup" class="button button-primary">Sign Up</a>
             </div>
         </div>
     </header>
 
     <main>
         <section id="hero">
-            <div class="container">
-                <div class="hero-content-wrapper">
-                    <h1>Find trusted home pros in your neighborhood</h1>
-                    <p class="subtext">Tell us what you need. We’ll get you prices and pros fast.</p>
-                    <div id="hero-search-form" class="hero-form">
-                        <div class="form-field-wrapper">
-                            <input type="text" id="service-input" name="service" placeholder="What service do you need?" autocomplete="off">
-                            <div id="autocomplete-results" class="autocomplete-results"></div>
-                        </div>
-                        <input type="text" id="zip-input" name="zip" placeholder="ZIP code">
-                        <button id="hero-cta-btn" type="button" class="button button-primary">Get free estimates</button>
-                    </div>
-                    <div class="hero-secondary-action">
-                        <a href="#cost-guides">Explore cost guides</a>
-                    </div>
-                    <div class="trust-badges">
-                        <div class="badge"><strong>4.8/5</strong> avg. rating</div>
-                        <div class="badge"><strong>1M+</strong> projects served</div>
-                    </div>
+            <div class="hero-background-slider">
+                <div class="slide" style="background-image: url('https://via.placeholder.com/1920x1080/2D3748/FFFFFF?text=Modern+Kitchen');"></div>
+                <div class="slide" style="background-image: url('https://via.placeholder.com/1920x1080/4299E1/FFFFFF?text=New+Roof');"></div>
+                <div class="slide" style="background-image: url('https://via.placeholder.com/1920x1080/FBBF24/000000?text=Plumbing+Fix');"></div>
+            </div>
+            <div class="hero-overlay">
+                <div class="container hero-content">
+                    <h1>Your Home, Expertly Handled.</h1>
+                    <p>Find trusted, local pros for any project.</p>
+                    <form id="hero-search-form">
+                        <input type="text" id="service-input" name="service" placeholder="What service do you need? (e.g., Plumbing)">
+                        <input type="text" id="zip-input" name="zip" placeholder="ZIP Code">
+                        <button type="submit" class="button button-primary">Get Estimates</button>
+                    </form>
                 </div>
             </div>
         </section>
 
         <section id="popular-projects">
             <div class="container">
-                <h2>Popular Projects Near You</h2>
-                <div id="popular-projects-carousel" class="carousel">
-                    <!-- Projects will be dynamically inserted here -->
+                <h2>Popular Services</h2>
+                <div id="popular-projects-grid" class="content-grid">
+                    <!-- Simplified project cards will be dynamically inserted here -->
                 </div>
-                <p class="disclaimer">Price shown is a national median for minimum job size; actual pricing varies.</p>
             </div>
         </section>
 
-        <section id="cost-guides" class="bg-slate-100">
+        <section id="embedded-chatbot-section" class="bg-white">
             <div class="container">
-                <h2>Keep Your Home in Shape</h2>
-                <div id="cost-guides-grid" class="grid-3">
-                    <!-- Cost guides will be dynamically inserted here -->
-                </div>
-            </div>
-        </section>
-
-        <section id="how-it-works">
-            <div class="container">
-                <h2>How It Works</h2>
-                <div class="steps-grid">
-                    <div class="step">
-                        <h3>1. Tell us what you need</h3>
-                        <p>Answer a few questions about your project, timeline, and budget.</p>
+                <h2>Not Sure Where to Start?</h2>
+                <p class="section-subtitle">Our AI agent can help you figure out project costs and next steps.</p>
+                <div class="embedded-chat-container">
+                    <div id="chat-messages" class="chat-messages">
+                        <!-- Chat messages will be dynamically inserted here -->
                     </div>
-                    <div class="step">
-                        <h3>2. Get matched to local pros</h3>
-                        <p>We connect you with available, top-rated professionals in your area.</p>
-                    </div>
-                    <div class="step">
-                        <h3>3. Compare quotes & book</h3>
-                        <p>Review estimates, profiles, and reviews to choose the right pro for the job.</p>
+                    <div class="chat-input-area">
+                        <form id="chat-form">
+                            <input type="text" id="chat-input" placeholder="Ask about a project, e.g., 'What does a new roof cost in 90210?'" autocomplete="off">
+                            <button type="submit" class="button button-primary">Send</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="categories" class="bg-slate-100">
+        <section id="categories">
             <div class="container">
                 <h2>Find a Pro by Category</h2>
-                <div id="categories-grid" class="grid-6">
-                    <!-- Categories will be dynamically inserted here -->
+                <div id="categories-grid" class="content-grid">
+                    <!-- Simplified category cards will be dynamically inserted here -->
                 </div>
             </div>
         </section>
 
-        <section id="featured-articles">
-            <div class="container">
-                <h2>Research & Plan</h2>
-                <div id="articles-grid" class="grid-4">
-                    <!-- Articles will be dynamically inserted here -->
-                </div>
-            </div>
-        </section>
-
-        <section id="app-promo" class="bg-primary-900 text-white">
+        <section id="app-promo" class="bg-primary-color text-white">
             <div class="container app-promo-content">
                 <div class="promo-text">
                     <h2>Get our app</h2>
                     <p>Manage your projects, message pros, and get cost updates on the go.</p>
-                    <div class="app-badges">
-                        <!-- App Store / Google Play badges would go here -->
-                        <a href="#"><img src="https://via.placeholder.com/120x40?text=App+Store" alt="App Store"></a>
-                        <a href="#"><img src="https://via.placeholder.com/120x40?text=Google+Play" alt="Google Play"></a>
-                    </div>
                 </div>
-                <div class="newsletter-signup">
-                    <h3>Free project cost updates</h3>
-                    <form id="newsletter-form">
-                        <input type="email" placeholder="Enter your email">
-                        <button type="submit" class="button button-accent">Sign Up</button>
-                    </form>
+                <div class="app-badges">
+                    <a href="#"><img src="https://via.placeholder.com/120x40/FFFFFF/1A202C?text=App+Store" alt="App Store"></a>
+                    <a href="#"><img src="https://via.placeholder.com/120x40/FFFFFF/1A202C?text=Google+Play" alt="Google Play"></a>
                 </div>
             </div>
         </section>
@@ -136,114 +91,19 @@
 
     <footer id="main-footer">
         <div class="container">
-            <div class="footer-columns">
-                <div class="footer-column">
-                    <h4>Homeowner Services</h4>
-                    <ul>
-                        <li><a href="#">Find a Pro</a></li>
-                        <li><a href="#">Cost Guides</a></li>
-                        <li><a href="#">How It Works</a></li>
-                        <li><a href="#">Project Financing</a></li>
-                    </ul>
+            <div class="footer-content">
+                <div class="logo">[BrandName]</div>
+                <div class="footer-links">
+                    <a href="#">About Us</a>
+                    <a href="#">For Pros</a>
+                    <a href="#">Support</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Privacy</a>
                 </div>
-                <div class="footer-column">
-                    <h4>For Pros</h4>
-                    <ul>
-                        <li><a href="#">Join Our Network</a></li>
-                        <li><a href="#">Pro Login</a></li>
-                        <li><a href="#">Pro Center</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="#">Articles & Advice</a></li>
-                        <li><a href="#">App Download</a></li>
-                        <li><a href="#">Customer Stories</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>About</h4>
-                    <ul>
-                        <li><a href="#">About [BrandName]</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Press</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Policies</h4>
-                    <ul>
-                        <li><a href="#">Terms of Use</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Social</h4>
-                    <!-- Social media icons would go here -->
-                </div>
-            </div>
-            <div class="footer-secondary">
-                <div class="top-cities">
-                    <strong>Top Cities:</strong> New York, Los Angeles, Chicago, Houston, Phoenix, Philadelphia, San Antonio, San Diego, Dallas, San Jose
-                </div>
-                <div class="copyright">
-                    &copy; 2024 [BrandName]. All Rights Reserved.
-                </div>
+                <div class="copyright">&copy; 2024 [BrandName]. All Rights Reserved.</div>
             </div>
         </div>
     </footer>
-
-    <div id="cost-agent-widget">
-        <div id="agent-bubble" class="agent-bubble">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M21.707 12.707a1 1 0 0 0-1.414-1.414L19 12.586V11a1 1 0 0 0-2 0v1.586l-1.293-1.293a1 1 0 0 0-1.414 1.414L16.586 15H15a1 1 0 0 0 0 2h1.586l-2.293 2.293a1 1 0 1 0 1.414 1.414L18 18.414V20a1 1 0 0 0 2 0v-1.586l2.293 2.293a1 1 0 0 0 1.414-1.414L20.414 17H22a1 1 0 0 0 0-2h-1.586l2.293-2.293ZM5.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h9.44a8.953 8.953 0 0 1-2.296-1.5H5.75V3.75h12.5v6.039a8.932 8.932 0 0 1 1.5 0V3.75A2.25 2.25 0 0 0 18.25 1.5H5.75A2.25 2.25 0 0 0 3.5 3.75v12.5A2.25 2.25 0 0 0 5.75 18.5h10.283a9.01 9.01 0 0 1 3.467 4.5H5.75A3.75 3.75 0 0 1 2 16.25V3.75A3.75 3.75 0 0 1 5.75 0h12.5A3.75 3.75 0 0 1 22 3.75v6.66c-.957-.225-1.954-.36-2.99-.41L19 10a1 1 0 1 0-2 0v.05A8.959 8.959 0 0 1 15.44 18H18a1 1 0 0 0 0-2h-2.12a7.004 7.004 0 0 0-1.03-1.5H18a1 1 0 0 0 0-2h-5.15a6.957 6.957 0 0 0-1.35-1.5H18a1 1 0 0 0 0-2h-6.5a1 1 0 0 0 0 2H14a5.01 5.01 0 0 1 3.56 8.52A6.992 6.992 0 0 0 11.5 16H9a1 1 0 1 0 0 2h2.5a4.988 4.988 0 0 1 4.363 2.5H9a1 1 0 1 0 0 2h7.332a6.992 6.992 0 0 0 3.375-1.123A8.997 8.997 0 0 1 5.75 23C2.582 23 0 20.418 0 17.25V6.75A3.75 3.75 0 0 1 3.75 3H5.75Z"></path></svg>
-            <span>Cost Agent</span>
-        </div>
-        <div id="agent-panel" class="agent-panel" style="display: none;">
-            <div class="agent-header">
-                <h3>Project Cost Agent</h3>
-                <button id="agent-close-btn">&times;</button>
-            </div>
-            <div id="agent-messages" class="agent-messages">
-                <!-- Chat messages will be dynamically inserted here -->
-            </div>
-            <div class="agent-input-area">
-                <form id="agent-form">
-                    <input type="text" id="agent-input" placeholder="Type your message..." autocomplete="off">
-                    <button type="submit">Send</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="lead-form-modal" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-content">
-            <button id="modal-close-btn" class="modal-close-btn" aria-label="Close modal">&times;</button>
-            <div id="modal-step-1">
-                <h3>Get free quotes for your project</h3>
-                <p>Tell us about your needs to get started.</p>
-                <form id="lead-form-step-1">
-                    <input type="text" id="lead-service" placeholder="Service (e.g., Roof Repair)" required>
-                    <input type="text" id="lead-zip" placeholder="ZIP Code" required>
-                    <input type="email" id="lead-email" placeholder="Email Address" required>
-                    <input type="tel" id="lead-phone" placeholder="Phone Number" required>
-                    <button type="submit" class="button button-primary">Continue</button>
-                </form>
-            </div>
-            <div id="modal-step-2" style="display:none;">
-                <h3>Almost there! Add a few more details.</h3>
-                <p>This helps us find the best pros for your job.</p>
-                <form id="lead-form-step-2">
-                    <textarea id="lead-notes" placeholder="Add photos or notes (optional)"></textarea>
-                    <input type="text" id="lead-timing" placeholder="Preferred time to be contacted? (optional)">
-                    <button type="submit" class="button button-primary">Get My Free Quotes</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast-notification" class="toast" style="display:none;">
-        <!-- Toast notification will be built in a later step -->
-    </div>
 
     <script src="script.js"></script>
 </body>
