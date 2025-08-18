@@ -72,17 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const webhookUrl = 'YOUR_N8N_WEBHOOK_URL'; // IMPORTANT: Replace with your actual webhook URL
 
         try {
-            // Combine description and zip code for the prompt
-            const fullDescription = `Zip Code: ${zipCode}\n\nProject Description: ${description}`;
-
             let response;
             if (inputType === 'pdf') {
                 // File submission
                 const formData = new FormData();
                 formData.append('inputType', 'pdf');
                 formData.append('file', file);
-                // Also include the full description (with zip)
-                formData.append('description', fullDescription);
+                formData.append('description', description);
+                formData.append('zipcode', zipCode);
 
                 response = await fetch(webhookUrl, {
                     method: 'POST',
@@ -96,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         inputType: 'text',
-                        description: fullDescription,
+                        description: description,
+                        zipcode: zipCode,
                     }),
                 });
             }
