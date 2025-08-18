@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Estimator</title>
+    <link rel="stylesheet" href="estimator.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Remodeling Construction Estimator</h1>
+            <p>Submit your project description or upload a blueprint (PDF) to get an estimate.</p>
+        </header>
+
+        <main>
+            <div class="form-container">
+                <form id="estimate-form">
+                    <div class="input-type-selector">
+                        <label>
+                            <input type="radio" name="inputType" value="text" checked>
+                            Text Description
+                        </label>
+                        <label>
+                            <input type="radio" name="inputType" value="pdf">
+                            PDF Blueprint
+                        </label>
+                    </div>
+
+                    <div>
+                        <label for="zip-code">Project Zip Code (5 digits)</label>
+                        <input type="text" id="zip-code" name="zip-code" required pattern="\\d{5}" placeholder="e.g., 90210" title="Please enter a 5-digit zip code.">
+                    </div>
+
+                    <div id="text-input-container">
+                        <label for="project-description">Project Description</label>
+                        <textarea id="project-description" rows="10" placeholder="e.g., Remodel a 150 sq ft kitchen and a 100 sq ft bathroom. We are looking for a standard level of finish..."></textarea>
+                    </div>
+
+                    <div id="pdf-input-container" class="hidden">
+                        <label for="pdf-file">PDF Blueprint</label>
+                        <input type="file" id="pdf-file" accept=".pdf">
+                    </div>
+
+                    <button type="submit" class="button-primary">Get Estimate</button>
+                </form>
+            </div>
+
+            <div id="results-container">
+                <h2>Your Estimate</h2>
+                <div id="results-content">
+                    <p class="placeholder">Your detailed estimate will appear here once you submit a request.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p><a href="index.html">Back to Home</a></p>
+        </footer>
+    </div>
+
+    <script src="estimator.js"></script>
+</body>
+</html>

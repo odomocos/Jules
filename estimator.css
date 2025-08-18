@@ -1,0 +1,199 @@
+/* --- Basic Styles for Estimator Page --- */
+:root {
+    --primary-color: #2D3748; /* Dark Slate */
+    --accent-color: #4299E1;  /* Bright Blue */
+    --bg-color: #F7FAFC;      /* Very Light Gray */
+    --text-color: #1A202C;    /* Almost Black */
+    --white: #FFFFFF;
+    --border-color: #E2E8F0;
+    --border-radius: 8px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    font-size: 16px;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+header, footer {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    color: var(--primary-color);
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-container, #results-container {
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+h2 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+/* Form Styles */
+#estimate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-type-selector {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+label {
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+textarea, input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+textarea:focus, input[type="file"]:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+}
+
+.button-primary {
+    display: inline-block;
+    padding: 0.875rem 1.75rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    background-color: var(--accent-color);
+    color: var(--white);
+    transition: transform 0.2s, box-shadow 0.2s;
+    align-self: flex-start;
+}
+
+.button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 14px rgba(66, 153, 225, 0.2);
+}
+
+.hidden {
+    display: none;
+}
+
+/* Results Styles */
+.placeholder {
+    color: #A0AEC0;
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+    color: var(--primary-color);
+}
+
+.error-message {
+    color: #E53E3E; /* Red */
+    background-color: #FFF5F5;
+    padding: 1rem;
+    border: 1px solid #E53E3E;
+    border-radius: var(--border-radius);
+}
+
+#results-content h4 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+#results-content ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1rem;
+}
+
+#results-content li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.estimate-table, .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+.estimate-table th, .estimate-table td,
+.summary-table th, .summary-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+.estimate-table th {
+    background-color: var(--bg-color);
+    font-weight: 600;
+}
+.estimate-table td:nth-child(3), .estimate-table td:nth-child(4) {
+    text-align: right;
+}
+.summary-table td:first-child {
+    font-weight: 600;
+}
+.summary-table td:nth-child(2) {
+    text-align: right;
+}
+.summary-table tr:last-child td {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+footer a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+footer a:hover {
+    text-decoration: underline;
+}
