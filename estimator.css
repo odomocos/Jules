@@ -197,3 +197,17 @@ footer a {
 footer a:hover {
     text-decoration: underline;
 }
+
+/* Validation Message Styles */
+.validation-message {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    min-height: 1.2em; /* Reserve space to prevent layout shift */
+    font-weight: 600;
+}
+.validation-message.success {
+    color: #2F855A; /* Green */
+}
+.validation-message.error {
+    color: #E53E3E; /* Red */
+}

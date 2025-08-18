@@ -6,11 +6,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfInputContainer = document.getElementById('pdf-input-container');
     const descriptionInput = document.getElementById('project-description');
     const zipCodeInput = document.getElementById('zip-code');
+    const zipCodeValidationMessage = document.getElementById('zip-code-validation-message');
     const fileInput = document.getElementById('pdf-file');
     const resultsContent = document.getElementById('results-content');
     const placeholder = document.querySelector('.placeholder');
 
     // --- Event Listeners ---
+    let zipCodeValidationTimer;
+
+    zipCodeInput.addEventListener('input', () => {
+        clearTimeout(zipCodeValidationTimer);
+        const zipCode = zipCodeInput.value.trim();
+
+        if (zipCode.length === 5) {
+            zipCodeValidationTimer = setTimeout(() => {
+                validateZipCode(zipCode);
+            }, 300); // Debounce API call
+        } else {
+            zipCodeValidationMessage.textContent = '';
+            zipCodeValidationMessage.className = 'validation-message';
+        }
+    });
 
     // Toggle between text and PDF input fields
     inputTypeRadios.forEach(radio => {
@@ -192,5 +208,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 .reduce((res, key) => (res !== null && res !== undefined ? res[key] : res), obj);
         const result = travel(/[,[\]]+?/) || travel(/[,[\].]+?/);
         return result === undefined || result === obj ? defaultValue : result;
+    };
+
+    /**
+     * Validates a zip code by calling an external API and updates the UI.
+     * @param {string} zipCode - The 5-digit zip code to validate.
+     */
+    const validateZipCode = async (zipCode) => {
+        zipCodeValidationMessage.textContent = 'Validating...';
+        zipCodeValidationMessage.className = 'validation-message';
+
+        try {
+            const response = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Invalid US Zip Code.');
+                }
+                throw new Error('Could not validate zip code.');
+            }
+            const data = await response.json();
+            const place = data.places[0];
+            const location = `${place['place name']}, ${place['state abbreviation']}`;
+
+            zipCodeValidationMessage.textContent = location;
+            zipCodeValidationMessage.className = 'validation-message success';
+
+        } catch (error) {
+            zipCodeValidationMessage.textContent = error.message;
+            zipCodeValidationMessage.className = 'validation-message error';
+        }
     };
 });
