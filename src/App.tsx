@@ -4,9 +4,11 @@ import './App.css';
 import Controls from './components/Controls';
 import Transcript from './components/Transcript';
 import Status from './components/Status';
-import { Recorder, RecorderData, getMicrophoneStream, getSystemAudioStream } from './audio/recorder';
+import { Recorder, getMicrophoneStream, getSystemAudioStream } from './audio/recorder';
+import type { RecorderData } from './audio/recorder';
 import { Uploader } from './api/uploader';
-import { TranslationClient, TranslationResult } from './api/translationClient';
+import { TranslationClient } from './api/translationClient';
+import type { TranslationResult } from './api/translationClient';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);

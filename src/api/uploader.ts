@@ -1,4 +1,4 @@
-import { RecorderData } from '../audio/recorder';
+import type { RecorderData } from '../audio/recorder';
 
 const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
 

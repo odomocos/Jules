@@ -14,7 +14,6 @@ export interface RecorderOptions {
 }
 
 export class Recorder {
-  private stream: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
   private workletNode: AudioWorkletNode | null = null;
