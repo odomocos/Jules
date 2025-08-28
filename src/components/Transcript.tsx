@@ -7,14 +7,14 @@ interface TranscriptProps {
 
 const Transcript: React.FC<TranscriptProps> = ({ interim, final }) => {
   return (
-    <div>
+    <div className="transcript-container">
       <h2>Transcript</h2>
-      <div id="final-transcript">
+      <div className="final-transcript">
         {final.map((text, i) => (
           <p key={i}>{text}</p>
         ))}
       </div>
-      <div id="interim-transcript" style={{ color: 'gray' }}>
+      <div className="interim-transcript">
         <p>{interim}</p>
       </div>
     </div>

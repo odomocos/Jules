@@ -16,13 +16,13 @@ const Status: React.FC<StatusProps> = ({
   bytesSent,
 }) => {
   return (
-    <div>
+    <div className="status-container">
       <h2>Status</h2>
-      <p>Permission: {permissionState}</p>
-      <p>Device: {deviceName || 'N/A'}</p>
-      <p>Sample Rate: {sampleRate || 'N/A'}</p>
-      <p>Chunk Size: {chunkSize || 'N/A'}</p>
-      <p>Bytes Sent: {bytesSent}</p>
+      <p><strong>Permission:</strong> {permissionState}</p>
+      <p><strong>Device:</strong> {deviceName || 'N/A'}</p>
+      <p><strong>Sample Rate:</strong> {sampleRate ? `${sampleRate} Hz` : 'N/A'}</p>
+      <p><strong>Chunk Size:</strong> {chunkSize ? `${chunkSize} bytes` : 'N/A'}</p>
+      <p><strong>Total Sent:</strong> {`${(bytesSent / 1024).toFixed(2)} KB`}</p>
     </div>
   );
 };

@@ -4,15 +4,15 @@ import './App.css';
 import Controls from './components/Controls';
 import Transcript from './components/Transcript';
 import Status from './components/Status';
-import { Recorder, getMicrophoneStream, getSystemAudioStream, RecorderData } from './audio/recorder';
+import { Recorder, RecorderData, getMicrophoneStream, getSystemAudioStream } from './audio/recorder';
 import { Uploader } from './api/uploader';
 import { TranslationClient, TranslationResult } from './api/translationClient';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [source, setSource] = useState<'mic' | 'system'>('mic');
-  const [sourceLang, setSourceLang] = useState('auto');
-  const [targetLang, setTargetLang] = useState(import.meta.env.VITE_DEFAULT_TARGET_LANG || 'en');
+  const [sourceLang, setSourceLang] = useState<'en-US' | 'ro-RO'>('en-US');
+  const [targetLang, setTargetLang] = useState<'en-US' | 'ro-RO'>('ro-RO');
   const [interim, setInterim] = useState('');
   const [final, setFinal] = useState<string[]>([]);
   const [permissionState, setPermissionState] = useState('prompt');
@@ -23,10 +23,25 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isSystemAudioSupported, setIsSystemAudioSupported] = useState(false);
 
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const recorderRef = useRef<Recorder | null>(null);
   const uploaderRef = useRef<Uploader | null>(null);
   const translationClientRef = useRef<TranslationClient | null>(null);
-  const sessionIdRef = useRef<string | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const onTranslation = (result: TranslationResult) => {
+    if (result.interim) {
+      setInterim(result.interim);
+    }
+    if (result.final) {
+      setFinal((prev) => [...prev, result.final as string]);
+      setInterim('');
+    }
+    if (result.audioUrl && audioPlayerRef.current) {
+      audioPlayerRef.current.src = result.audioUrl;
+      audioPlayerRef.current.play().catch(e => console.error("Audio playback failed:", e));
+    }
+  };
 
   const handleData = (data: RecorderData) => {
     uploaderRef.current?.uploadChunk(data).catch((err) => {
@@ -37,28 +52,28 @@ function App() {
     setChunkSize(data.blob.size);
   };
 
-  const handleStop = () => {
+  const stopRecording = () => {
+    recorderRef.current?.stop();
+    translationClientRef.current?.stop();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    uploaderRef.current?.finalize().catch((err) => {
+      setError(`Finalization failed: ${err.message}`);
+    });
     setIsRecording(false);
     setDeviceName('');
   };
 
-  const onTranslation = (result: TranslationResult) => {
-    if (result.interim) {
-      setInterim(result.interim);
-    }
-    if (result.final) {
-      setInterim('');
-      setFinal((prev) => [...prev, result.final as string]);
-    }
-  };
-
   const handleStart = async () => {
     setError(null);
+    setPermissionState('prompt');
     setBytesSent(0);
     setChunkSize(null);
     setSampleRate(null);
-    setInterim('');
     setFinal([]);
+    setInterim('');
 
     try {
       const stream =
@@ -66,21 +81,16 @@ function App() {
           ? await getMicrophoneStream()
           : await getSystemAudioStream();
 
+      streamRef.current = stream;
       const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack) {
-        setDeviceName(audioTrack.label);
+        setDeviceName(audioTrack.label || 'Unknown Device');
+        audioTrack.onended = () => stopRecording();
       }
 
-      if (recorderRef.current) {
-        recorderRef.current.stop();
-      }
-      if (translationClientRef.current) {
-        translationClientRef.current.stop();
-      }
-
-      sessionIdRef.current = uuidv4();
+      const sessionId = uuidv4();
       uploaderRef.current = new Uploader({
-        sessionId: sessionIdRef.current,
+        sessionId,
         source,
         sourceLang,
         targetLang,
@@ -88,77 +98,78 @@ function App() {
       });
 
       translationClientRef.current = new TranslationClient({
-        sessionId: sessionIdRef.current,
+        sessionId,
         onTranslation,
         onError: (err) => setError(`Translation error: ${err.message}`),
       });
 
-      const recorder = new Recorder({
+      recorderRef.current = new Recorder({
         onData: handleData,
-        onStop: handleStop,
+        onStop: stopRecording,
         getSampleRate: (rate) => {
           setSampleRate(rate);
           uploaderRef.current?.setSampleRate(rate);
         },
       });
 
-      await recorder.start(stream);
-      recorderRef.current = recorder;
+      await recorderRef.current.start(stream);
       setPermissionState('granted');
       setIsRecording(true);
       translationClientRef.current.start();
 
     } catch (err) {
-      console.error(err);
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(`Could not get audio stream: ${errorMessage}. Please check permissions.`);
+      setError(`Could not start recording: ${errorMessage}`);
       setPermissionState('denied');
     }
-  };
-
-  const stopRecording = () => {
-    recorderRef.current?.stop();
-    uploaderRef.current?.finalize().catch((err) => {
-        setError(`Finalization failed: ${err.message}`);
-    });
-    translationClientRef.current?.stop();
   };
 
   useEffect(() => {
     if (navigator.mediaDevices && 'getDisplayMedia' in navigator.mediaDevices) {
       setIsSystemAudioSupported(true);
     }
-
     return () => {
+      // Ensure everything is stopped on unmount
       recorderRef.current?.stop();
       translationClientRef.current?.stop();
-    };
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    }
   }, []);
 
   return (
     <div className="App">
-      <h1>Live Translation</h1>
-      <Controls
-        isRecording={isRecording}
-        isSystemAudioSupported={isSystemAudioSupported}
-        onStart={handleStart}
-        onStop={stopRecording}
-        onSourceChange={setSource}
-        onSourceLangChange={setSourceLang}
-        onTargetLangChange={setTargetLang}
-        source={source}
-        sourceLang={sourceLang}
-        targetLang={targetLang}
-      />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <Status
-        permissionState={permissionState}
-        deviceName={deviceName}
-        sampleRate={sampleRate}
-        chunkSize={chunkSize}
-        bytesSent={bytesSent}
-      />
-      <Transcript interim={interim} final={final} />
+      <header>
+        <h1>Live Audio Translation</h1>
+        <p>English &harr; Romanian</p>
+      </header>
+      <main>
+        <div className="main-controls">
+          <Controls
+            isRecording={isRecording}
+            isSystemAudioSupported={isSystemAudioSupported}
+            onStart={handleStart}
+            onStop={stopRecording}
+            onSourceChange={setSource}
+            onSourceLangChange={setSourceLang}
+            onTargetLangChange={setTargetLang}
+            source={source}
+            sourceLang={sourceLang}
+            targetLang={targetLang}
+          />
+          <Status
+            permissionState={permissionState}
+            deviceName={deviceName}
+            sampleRate={sampleRate}
+            chunkSize={chunkSize}
+            bytesSent={bytesSent}
+          />
+        </div>
+        <Transcript interim={interim} final={final} />
+      </main>
+      {error && <div className="error-banner">{error}</div>}
+      <audio ref={audioPlayerRef} style={{ display: 'none' }} />
     </div>
   );
 }

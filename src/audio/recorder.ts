@@ -1,46 +1,43 @@
 import workletUrl from './AudioWorkletProcessor.ts?url';
 
-export type AudioSource = 'mic' | 'system';
+export type AudioEncoding = 'LINEAR16' | 'OGG_OPUS';
 
 export interface RecorderData {
   blob: Blob;
-  encoding: 'LINEAR16' | 'OGG_OPUS';
+  encoding: AudioEncoding;
 }
 
 export interface RecorderOptions {
   onData: (data: RecorderData) => void;
   onStop: () => void;
-  getSampleRate?: (rate: number) => void;
+  getSampleRate: (rate: number) => void;
 }
 
 export class Recorder {
   private stream: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
+  private source: MediaStreamAudioSourceNode | null = null;
   private workletNode: AudioWorkletNode | null = null;
   private mediaRecorder: MediaRecorder | null = null;
   private options: RecorderOptions;
-  private source: MediaStreamAudioSourceNode | null = null;
 
   constructor(options: RecorderOptions) {
     this.options = options;
   }
 
-  private async initWorklet() {
-    if (!this.stream) throw new Error('Stream not available');
-
+  private async initWorklet(stream: MediaStream) {
     this.audioContext = new AudioContext();
-    if (this.options.getSampleRate) {
-      this.options.getSampleRate(this.audioContext.sampleRate);
-    }
+    this.options.getSampleRate(this.audioContext.sampleRate);
 
     try {
       await this.audioContext.audioWorklet.addModule(workletUrl);
     } catch (e) {
-      console.error('Error adding audio worklet module', e);
-      throw e;
+      console.error('Error adding AudioWorklet module. Falling back to MediaRecorder.', e);
+      this.initMediaRecorder(stream); // Fallback on error
+      return;
     }
 
-    this.source = this.audioContext.createMediaStreamSource(this.stream);
+    this.source = this.audioContext.createMediaStreamSource(stream);
     this.workletNode = new AudioWorkletNode(this.audioContext, 'resampler-processor');
 
     this.workletNode.port.onmessage = (event: MessageEvent<Int16Array>) => {
@@ -49,19 +46,21 @@ export class Recorder {
     };
 
     this.source.connect(this.workletNode);
-    this.workletNode.connect(this.audioContext.destination);
+    // We don't need to connect to the destination, as we're not playing the audio back here.
   }
 
-  private initMediaRecorder() {
-    if (!this.stream) throw new Error('Stream not available');
-
+  private initMediaRecorder(stream: MediaStream) {
+    if (!MediaRecorder) {
+        throw new Error('MediaRecorder is not supported in this browser.');
+    }
     const options = { mimeType: 'audio/ogg;codecs=opus' };
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        console.warn(`${options.mimeType} is not supported. Falling back to default.`);
-        this.mediaRecorder = new MediaRecorder(this.stream);
+        console.warn(`${options.mimeType} is not supported. Using default.`);
+        this.mediaRecorder = new MediaRecorder(stream);
     } else {
-        this.mediaRecorder = new MediaRecorder(this.stream, options);
+        this.mediaRecorder = new MediaRecorder(stream, options);
     }
+    this.options.getSampleRate(this.mediaRecorder.stream.getAudioTracks()[0].getSettings().sampleRate || 0);
 
     this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
       if (event.data.size > 0) {
@@ -69,10 +68,7 @@ export class Recorder {
       }
     };
 
-    this.mediaRecorder.onstop = () => {
-      this.options.onStop();
-    };
-
+    this.mediaRecorder.onstop = this.options.onStop;
     this.mediaRecorder.start(1000); // 1-second chunks
   }
 
@@ -81,58 +77,62 @@ export class Recorder {
     const useWorklet = typeof AudioWorkletNode !== 'undefined';
 
     if (useWorklet) {
-      try {
-        await this.initWorklet();
-      } catch (e) {
-        console.warn('AudioWorklet failed, falling back to MediaRecorder', e);
-        this.initMediaRecorder();
-      }
+      await this.initWorklet(stream);
     } else {
-      console.warn('AudioWorklet not supported, falling back to MediaRecorder');
-      this.initMediaRecorder();
+      console.warn('AudioWorklet not supported, falling back to MediaRecorder.');
+      this.initMediaRecorder(stream);
     }
   }
 
   stop() {
-    if (this.workletNode) {
+    if (this.workletNode && this.source && this.audioContext) {
       this.workletNode.port.onmessage = null;
       this.workletNode.disconnect();
-      this.workletNode = null;
-    }
-    if (this.source) {
-        this.source.disconnect();
-        this.source = null;
-    }
-    if (this.audioContext) {
+      this.source.disconnect();
       this.audioContext.close();
-      this.audioContext = null;
+      this.options.onStop();
     }
+
     if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-      this.mediaRecorder.stop();
+      this.mediaRecorder.stop(); // onstop callback will trigger options.onStop
     }
-    this.stream?.getTracks().forEach(track => track.stop());
-    this.stream = null;
-    this.options.onStop();
+
+    // The stream tracks are stopped in App.tsx to ensure the ref is cleaned up.
   }
 }
 
+/**
+ * Requests a media stream from the user's microphone.
+ */
 export async function getMicrophoneStream(): Promise<MediaStream> {
-    return navigator.mediaDevices.getUserMedia({
-      audio: {
-        channelCount: 1,
-        echoCancellation: true,
-        noiseSuppression: true,
-      },
-    });
+  return navigator.mediaDevices.getUserMedia({
+    audio: {
+      channelCount: 1,
+      echoCancellation: true,
+      noiseSuppression: true,
+    },
+  });
+}
+
+/**
+ * Requests a media stream from the user's system or a specific tab by prompting for screen sharing.
+ * The user must explicitly choose to share their audio.
+ */
+export async function getSystemAudioStream(): Promise<MediaStream> {
+  const displayStream = await navigator.mediaDevices.getDisplayMedia({
+    video: true, // Video is required to prompt for audio sharing in most browsers.
+    audio: true,
+  });
+
+  // We only want the audio. Stop the video track to save resources and prevent a video feed from showing.
+  displayStream.getVideoTracks().forEach((track) => track.stop());
+
+  const audioTracks = displayStream.getAudioTracks();
+  if (audioTracks.length === 0) {
+    // Stop all tracks and throw an error if the user didn't share audio.
+    displayStream.getTracks().forEach((track) => track.stop());
+    throw new Error("No audio track was shared. Please ensure you check 'Share tab audio' or 'Share system audio'.");
   }
 
-  export async function getSystemAudioStream(): Promise<MediaStream> {
-    const displayStream = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: true,
-    });
-
-    displayStream.getVideoTracks().forEach((track) => track.stop());
-
-    return displayStream;
-  }
+  return displayStream;
+}

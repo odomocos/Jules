@@ -12,6 +12,11 @@ declare class AudioWorkletProcessor {
   process(inputs: Float32Array[][], outputs: Float32Array[][], parameters: Record<string, Float32Array>): boolean;
 }
 
+/**
+ * An AudioWorkletProcessor that resamples and converts audio to 16-bit PCM.
+ * It takes multi-channel audio, downmixes it to mono, resamples to a target sample rate,
+ * and converts it to 16-bit PCM format.
+ */
 class ResamplerProcessor extends AudioWorkletProcessor {
   private readonly targetSampleRate = 16000;
   private readonly resampleRatio: number;
@@ -19,9 +24,15 @@ class ResamplerProcessor extends AudioWorkletProcessor {
 
   constructor() {
     super();
+    // The 'sampleRate' global variable is provided by the AudioWorkletGlobalScope.
     this.resampleRatio = sampleRate / this.targetSampleRate;
   }
 
+  /**
+   * Downmixes multiple channels into a single mono channel by averaging the samples.
+   * @param inputChannels - An array of Float32Arrays, where each array represents a channel.
+   * @returns A single Float32Array containing the mono audio data.
+   */
   private downmix(inputChannels: Float32Array[]): Float32Array {
     if (inputChannels.length === 1) {
       return inputChannels[0];
@@ -39,26 +50,32 @@ class ResamplerProcessor extends AudioWorkletProcessor {
     return mono;
   }
 
+  /**
+   * The main processing function, called by the browser's audio engine.
+   */
   process(inputs: Float32Array[][]): boolean {
     const inputChannels = inputs[0];
+    // Keep the processor alive, even if there's no input.
     if (!inputChannels || inputChannels.length === 0 || inputChannels[0].length === 0) {
       return true;
     }
 
     const monoData = this.downmix(inputChannels);
 
-    // Append new data to the buffer
+    // Append the new mono data to our internal buffer.
     const newBuffer = new Float32Array(this.buffer.length + monoData.length);
     newBuffer.set(this.buffer);
     newBuffer.set(monoData, this.buffer.length);
     this.buffer = newBuffer;
 
+    // Calculate how many full output samples we can produce from the current buffer.
     const outputLength = Math.floor(this.buffer.length / this.resampleRatio);
     if (outputLength === 0) {
-      return true;
+      return true; // Not enough data to produce a sample, wait for more.
     }
 
     const outputData = new Float32Array(outputLength);
+    // Perform linear interpolation for resampling.
     for (let i = 0; i < outputLength; i++) {
       const index = i * this.resampleRatio;
       const indexPrev = Math.floor(index);
@@ -69,17 +86,21 @@ class ResamplerProcessor extends AudioWorkletProcessor {
         (this.buffer[indexNext] - this.buffer[indexPrev]) * fraction;
     }
 
+    // Remove the processed data from the buffer, keeping the rest for the next call.
     const consumedDataLength = Math.floor(outputLength * this.resampleRatio);
     this.buffer = this.buffer.slice(consumedDataLength);
 
+    // Convert the resampled float32 data to 16-bit PCM.
     const pcmData = new Int16Array(outputData.length);
     for (let i = 0; i < outputData.length; i++) {
       const s = Math.max(-1, Math.min(1, outputData[i]));
       pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
     }
 
+    // Post the PCM data back to the main thread.
+    // The second argument is a list of transferable objects to avoid copying data.
     if (pcmData.length > 0) {
-        this.port.postMessage(pcmData, [pcmData.buffer]);
+      this.port.postMessage(pcmData, [pcmData.buffer]);
     }
 
     return true;

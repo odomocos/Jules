@@ -6,11 +6,11 @@ interface ControlsProps {
   onStart: () => void;
   onStop: () => void;
   onSourceChange: (source: 'mic' | 'system') => void;
-  onSourceLangChange: (lang: string) => void;
-  onTargetLangChange: (lang: string) => void;
+  onSourceLangChange: (lang: 'en-US' | 'ro-RO') => void;
+  onTargetLangChange: (lang: 'en-US' | 'ro-RO') => void;
   source: 'mic' | 'system';
-  sourceLang: string;
-  targetLang: string;
+  sourceLang: 'en-US' | 'ro-RO';
+  targetLang: 'en-US' | 'ro-RO';
 }
 
 const Controls: React.FC<ControlsProps> = ({
@@ -25,10 +25,18 @@ const Controls: React.FC<ControlsProps> = ({
   sourceLang,
   targetLang,
 }) => {
+  const handleSourceLangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSourceLang = e.target.value as 'en-US' | 'ro-RO';
+    onSourceLangChange(newSourceLang);
+    // Automatically set target language to the other option
+    onTargetLangChange(newSourceLang === 'en-US' ? 'ro-RO' : 'en-US');
+  };
+
   return (
-    <div>
+    <div className="controls-container">
       <h2>Controls</h2>
-      <div>
+      <div className="control-group">
+        <strong>Audio Source:</strong>
         <label>
           <input
             type="radio"
@@ -52,34 +60,25 @@ const Controls: React.FC<ControlsProps> = ({
           System/Tab Audio
         </label>
       </div>
-      <div>
+      <div className="control-group">
         <label>
-          Source Language:
-          <input
-            type="text"
-            value={sourceLang}
-            onChange={(e) => onSourceLangChange(e.target.value)}
-            disabled={isRecording}
-          />
+          <strong>Translate from:</strong>
+          <select value={sourceLang} onChange={handleSourceLangChange} disabled={isRecording}>
+            <option value="en-US">English</option>
+            <option value="ro-RO">Romanian</option>
+          </select>
+        </label>
+        <label>
+          <strong>To:</strong>
+          <input type="text" value={targetLang === 'en-US' ? 'English' : 'Romanian'} readOnly disabled />
         </label>
       </div>
-      <div>
-        <label>
-          Target Language:
-          <input
-            type="text"
-            value={targetLang}
-            onChange={(e) => onTargetLangChange(e.target.value)}
-            disabled={isRecording}
-          />
-        </label>
-      </div>
-      <div>
+      <div className="control-group">
         <button onClick={onStart} disabled={isRecording}>
-          Start
+          Start Recording
         </button>
         <button onClick={onStop} disabled={!isRecording}>
-          Stop
+          Stop Recording
         </button>
       </div>
     </div>
