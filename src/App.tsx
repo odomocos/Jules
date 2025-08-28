@@ -54,7 +54,16 @@ function App() {
     setChunkSize(data.blob.size);
   };
 
+  const handleRecordingStop = () => {
+    // This function is called by the recorder when it has fully stopped.
+    setDeviceName('');
+  };
+
   const stopRecording = () => {
+    // This function is called when the user clicks the stop button.
+    if (!isRecording) return;
+    setIsRecording(false); // Update UI immediately
+
     recorderRef.current?.stop();
     translationClientRef.current?.stop();
     if (streamRef.current) {
@@ -64,8 +73,6 @@ function App() {
     uploaderRef.current?.finalize().catch((err) => {
       setError(`Finalization failed: ${err.message}`);
     });
-    setIsRecording(false);
-    setDeviceName('');
   };
 
   const handleStart = async () => {
@@ -107,7 +114,7 @@ function App() {
 
       recorderRef.current = new Recorder({
         onData: handleData,
-        onStop: stopRecording,
+        onStop: handleRecordingStop,
         getSampleRate: (rate) => {
           setSampleRate(rate);
           uploaderRef.current?.setSampleRate(rate);

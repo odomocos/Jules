@@ -1,4 +1,5 @@
 import type { RecorderData } from '../audio/recorder';
+import { encodeWAV } from '../audio/wav-encoder';
 
 const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
 
@@ -35,8 +36,9 @@ export class Uploader {
       isFinal,
     };
     formData.append('meta', JSON.stringify(meta));
-    // Use a filename to help n8n identify the file
-    formData.append('audio', data.blob, `chunk-${meta.seq}.bin`);
+    // Use a filename with a .wav extension
+    const filename = meta.encoding === 'WAV' ? `chunk-${meta.seq}.wav` : `chunk-${meta.seq}.ogg`;
+    formData.append('audio', data.blob, filename);
 
     try {
       const response = await fetch(`${N8N_WEBHOOK_URL}/audio-chunk`, {
@@ -57,10 +59,13 @@ export class Uploader {
   }
 
   async finalize() {
-    // Send a final message with no audio data to signal the end of the stream.
+    // Send a final, empty WAV file to signal the end of the stream.
     console.log('Sending finalization signal...');
-    const emptyBlob = new Blob([], { type: 'application/octet-stream' });
-    const data: RecorderData = { blob: emptyBlob, encoding: 'LINEAR16' };
+    const emptyPCM = new Int16Array(0);
+    // Use a default sample rate if none is provided, although it should be set by now.
+    const sampleRate = this.metadata.sampleRateHz || 16000;
+    const emptyWavBlob = encodeWAV(emptyPCM, sampleRate);
+    const data: RecorderData = { blob: emptyWavBlob, encoding: 'WAV' };
     await this.uploadChunk(data, true);
   }
 }

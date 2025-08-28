@@ -1,6 +1,7 @@
 import workletUrl from './AudioWorkletProcessor.ts?url';
+import { encodeWAV } from './wav-encoder';
 
-export type AudioEncoding = 'LINEAR16' | 'OGG_OPUS';
+export type AudioEncoding = 'WAV' | 'OGG_OPUS';
 
 export interface RecorderData {
   blob: Blob;
@@ -40,8 +41,9 @@ export class Recorder {
     this.workletNode = new AudioWorkletNode(this.audioContext, 'resampler-processor');
 
     this.workletNode.port.onmessage = (event: MessageEvent<Int16Array>) => {
-      const blob = new Blob([event.data], { type: 'application/octet-stream' });
-      this.options.onData({ blob, encoding: 'LINEAR16' });
+      const pcmData = event.data;
+      const wavBlob = encodeWAV(pcmData, this.audioContext!.sampleRate);
+      this.options.onData({ blob: wavBlob, encoding: 'WAV' });
     };
 
     this.source.connect(this.workletNode);
