@@ -59,13 +59,13 @@ export class Uploader {
   }
 
   async finalize() {
-    // Send a final, empty WAV file to signal the end of the stream.
+    // Send a final WAV file containing 0.1s of silence to signal the end of the stream.
+    // This is required to satisfy the minimum audio length for some transcription APIs.
     console.log('Sending finalization signal...');
-    const emptyPCM = new Int16Array(0);
-    // Use a default sample rate if none is provided, although it should be set by now.
     const sampleRate = this.metadata.sampleRateHz || 16000;
-    const emptyWavBlob = encodeWAV(emptyPCM, sampleRate);
-    const data: RecorderData = { blob: emptyWavBlob, encoding: 'WAV' };
+    const silentSamples = new Int16Array(sampleRate * 0.1); // 0.1 seconds of silence
+    const silentWavBlob = encodeWAV(silentSamples, sampleRate);
+    const data: RecorderData = { blob: silentWavBlob, encoding: 'WAV' };
     await this.uploadChunk(data, true);
   }
 }
