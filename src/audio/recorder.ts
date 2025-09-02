@@ -21,8 +21,33 @@ export class Recorder {
   private mediaRecorder: MediaRecorder | null = null;
   private options: RecorderOptions;
 
+  // Buffering properties for the AudioWorklet path
+  private pcmBuffer: Int16Array[] = [];
+  private bufferFlushTimer: number | null = null;
+  private readonly bufferFlushInterval = 1500; // ms
+
   constructor(options: RecorderOptions) {
     this.options = options;
+  }
+
+  private flushBuffer = () => {
+    if (this.pcmBuffer.length === 0 || !this.audioContext) {
+      return;
+    }
+
+    // Concatenate all buffered chunks into one large PCM array
+    const totalLength = this.pcmBuffer.reduce((acc, val) => acc + val.length, 0);
+    const concatenatedPCM = new Int16Array(totalLength);
+    let offset = 0;
+    for (const buffer of this.pcmBuffer) {
+      concatenatedPCM.set(buffer, offset);
+      offset += buffer.length;
+    }
+    this.pcmBuffer = []; // Clear the buffer
+
+    // Encode the large chunk as a single WAV file
+    const wavBlob = encodeWAV(concatenatedPCM, this.audioContext.sampleRate);
+    this.options.onData({ blob: wavBlob, encoding: 'WAV' });
   }
 
   private async initWorklet(stream: MediaStream) {
@@ -33,21 +58,22 @@ export class Recorder {
       await this.audioContext.audioWorklet.addModule(workletUrl);
     } catch (e) {
       console.error('Error adding AudioWorklet module. Falling back to MediaRecorder.', e);
-      this.initMediaRecorder(stream); // Fallback on error
+      this.initMediaRecorder(stream);
       return;
     }
 
     this.source = this.audioContext.createMediaStreamSource(stream);
     this.workletNode = new AudioWorkletNode(this.audioContext, 'resampler-processor');
 
+    // Instead of sending data immediately, push it to our buffer.
     this.workletNode.port.onmessage = (event: MessageEvent<Int16Array>) => {
-      const pcmData = event.data;
-      const wavBlob = encodeWAV(pcmData, this.audioContext!.sampleRate);
-      this.options.onData({ blob: wavBlob, encoding: 'WAV' });
+      this.pcmBuffer.push(event.data);
     };
 
     this.source.connect(this.workletNode);
-    // We don't need to connect to the destination, as we're not playing the audio back here.
+
+    // Start a timer to flush the buffer periodically
+    this.bufferFlushTimer = window.setInterval(this.flushBuffer, this.bufferFlushInterval);
   }
 
   private initMediaRecorder(stream: MediaStream) {
@@ -70,11 +96,10 @@ export class Recorder {
     };
 
     this.mediaRecorder.onstop = this.options.onStop;
-    this.mediaRecorder.start(1000); // 1-second chunks
+    this.mediaRecorder.start(this.bufferFlushInterval); // Use same interval for consistency
   }
 
   async start(stream: MediaStream) {
-    this.stream = stream;
     const useWorklet = typeof AudioWorkletNode !== 'undefined';
 
     if (useWorklet) {
@@ -87,6 +112,12 @@ export class Recorder {
 
   stop() {
     if (this.workletNode && this.source && this.audioContext) {
+      // Worklet path cleanup
+      if (this.bufferFlushTimer) {
+        clearInterval(this.bufferFlushTimer);
+        this.bufferFlushTimer = null;
+      }
+      this.flushBuffer(); // Send any remaining data
       this.workletNode.port.onmessage = null;
       this.workletNode.disconnect();
       this.source.disconnect();
@@ -97,8 +128,6 @@ export class Recorder {
     if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
       this.mediaRecorder.stop(); // onstop callback will trigger options.onStop
     }
-
-    // The stream tracks are stopped in App.tsx to ensure the ref is cleaned up.
   }
 }
 
@@ -117,20 +146,17 @@ export async function getMicrophoneStream(): Promise<MediaStream> {
 
 /**
  * Requests a media stream from the user's system or a specific tab by prompting for screen sharing.
- * The user must explicitly choose to share their audio.
  */
 export async function getSystemAudioStream(): Promise<MediaStream> {
   const displayStream = await navigator.mediaDevices.getDisplayMedia({
-    video: true, // Video is required to prompt for audio sharing in most browsers.
+    video: true,
     audio: true,
   });
 
-  // We only want the audio. Stop the video track to save resources and prevent a video feed from showing.
   displayStream.getVideoTracks().forEach((track) => track.stop());
 
   const audioTracks = displayStream.getAudioTracks();
   if (audioTracks.length === 0) {
-    // Stop all tracks and throw an error if the user didn't share audio.
     displayStream.getTracks().forEach((track) => track.stop());
     throw new Error("No audio track was shared. Please ensure you check 'Share tab audio' or 'Share system audio'.");
   }
