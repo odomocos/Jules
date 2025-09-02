@@ -33,10 +33,12 @@ export class TranslationClient {
   }
 
   public start() {
-    console.log(`Starting translation client in ${USE_SSE ? 'SSE' : 'Polling'} mode.`);
+    console.log(`Starting translation client...`);
     if (USE_SSE) {
+      console.log('Attempting SSE connection.');
       this.connectSSE();
     } else {
+      console.log('Polling mode forced by .env config.');
       this.startPolling();
     }
   }
@@ -68,10 +70,10 @@ export class TranslationClient {
     };
 
     this.eventSource.onerror = () => {
-      // EventSource automatically tries to reconnect. We'll report the error but let it be.
-      // If the connection is truly closed, the server should handle it.
-      // We only manually stop on explicit user action.
-      this.options.onError(new Error('Connection to translation stream lost. Attempting to reconnect...'));
+      // This handler is called on any EventSource error, including connection failures.
+      console.warn('SSE connection failed. Falling back to polling mode.');
+      this.stop(); // This will close the EventSource and prevent it from trying to reconnect.
+      this.startPolling(); // Start the polling mechanism as a fallback.
     };
   }
 
